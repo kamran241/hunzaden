@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ReviewForm.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -16,6 +16,30 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [touched, setTouched] = useState({});
+
+    // Calculate form completion percentage
+    const calculateProgress = () => {
+        const requiredFields = [
+            'customer_name',
+            'ambience_rating',
+            'management_rating',
+            'food_rating',
+            'heard_from',
+            'overall_rating'
+        ];
+
+        const completed = requiredFields.filter(field => {
+            if (field.includes('rating')) {
+                return formData[field] > 0;
+            }
+            return formData[field] && formData[field].trim() !== '';
+        }).length;
+
+        return Math.round((completed / requiredFields.length) * 100);
+    };
+
+    const progress = calculateProgress();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -49,7 +73,7 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
             if (data.success) {
                 setMessage({
                     type: 'success',
-                    text: reviewToEdit ? 'Review updated successfully!' : 'Thank you for your feedback!'
+                    text: reviewToEdit ? 'Review updated successfully! ✓' : 'Thank you for your feedback! ✓'
                 });
 
                 if (!reviewToEdit) {
@@ -63,6 +87,7 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                         overall_rating: 0,
                         additional_comments: ''
                     });
+                    setTouched({});
                 }
 
                 setTimeout(() => {
@@ -80,6 +105,12 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
 
     const handleRatingClick = (field, value) => {
         setFormData({ ...formData, [field]: value });
+        setTouched({ ...touched, [field]: true });
+    };
+
+    const handleFieldChange = (field, value) => {
+        setFormData({ ...formData, [field]: value });
+        setTouched({ ...touched, [field]: true });
     };
 
     const renderRatingButtons = (field, currentValue) => {
@@ -89,7 +120,7 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                     <button
                         key={num}
                         type="button"
-                        className={`rating-btn ${currentValue >= num ? 'active' : ''}`}
+                        className={`rating-btn ${currentValue >= num ? 'active' : ''} ${touched[field] && currentValue === 0 ? 'error' : ''}`}
                         onClick={() => handleRatingClick(field, num)}
                     >
                         {num}
@@ -110,6 +141,7 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                     {loading && (
                         <div className="loading-overlay">
                             <div className="spinner"></div>
+                            <p className="loading-text">Submitting your feedback...</p>
                         </div>
                     )}
 
@@ -118,10 +150,23 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                             {reviewToEdit ? 'Edit Review' : 'Customer Feedback Form'}
                         </h1>
                         <p className="form-subtitle">Hunza Den</p>
+
+                        {/* Progress Bar */}
+                        {!reviewToEdit && (
+                            <div className="progress-container">
+                                <div className="progress-bar">
+                                    <div
+                                        className="progress-fill"
+                                        style={{ width: `${progress}%` }}
+                                    ></div>
+                                </div>
+                                <p className="progress-text">{progress}% Complete</p>
+                            </div>
+                        )}
                     </div>
 
                     {message.text && (
-                        <div className={message.type === 'success' ? 'success-message' : 'error-message'}>
+                        <div className={`message ${message.type === 'success' ? 'success-message' : 'error-message'}`}>
                             {message.text}
                         </div>
                     )}
@@ -129,54 +174,93 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                     <form onSubmit={handleSubmit}>
                         {/* Customer Name */}
                         <div className="form-group">
-                            <label className="form-label">Customer Name *</label>
+                            <label className="form-label">
+                                Customer Name <span className="required">*</span>
+                            </label>
                             <input
                                 type="text"
-                                className="form-input"
+                                className={`form-input ${touched.customer_name && !formData.customer_name ? 'error' : ''}`}
                                 placeholder="Enter your name"
                                 value={formData.customer_name}
-                                onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                                onChange={(e) => handleFieldChange('customer_name', e.target.value)}
                                 required
                             />
                         </div>
 
                         {/* Ambience Rating */}
                         <div className="form-group">
-                            <label className="form-label">Ambience Rating * (1-10)</label>
+                            <label className="form-label">
+                                Ambience Rating <span className="required">*</span>
+                                <span className="rating-hint">(1-10)</span>
+                            </label>
                             {renderRatingButtons('ambience_rating', formData.ambience_rating)}
+                            {formData.ambience_rating > 0 && (
+                                <p className="rating-feedback">
+                                    {formData.ambience_rating >= 8 ? '😊 Excellent!' :
+                                        formData.ambience_rating >= 6 ? '👍 Good' :
+                                            formData.ambience_rating >= 4 ? '😐 Fair' : '😞 Needs improvement'}
+                                </p>
+                            )}
                         </div>
 
                         {/* Management Rating */}
                         <div className="form-group">
-                            <label className="form-label">Management & Service Rating * (1-10)</label>
+                            <label className="form-label">
+                                Management & Service Rating <span className="required">*</span>
+                                <span className="rating-hint">(1-10)</span>
+                            </label>
                             {renderRatingButtons('management_rating', formData.management_rating)}
+                            {formData.management_rating > 0 && (
+                                <p className="rating-feedback">
+                                    {formData.management_rating >= 8 ? '😊 Excellent!' :
+                                        formData.management_rating >= 6 ? '👍 Good' :
+                                            formData.management_rating >= 4 ? '😐 Fair' : '😞 Needs improvement'}
+                                </p>
+                            )}
                         </div>
 
                         {/* Food Rating */}
                         <div className="form-group">
-                            <label className="form-label">Food Quality Rating * (1-10)</label>
+                            <label className="form-label">
+                                Food Quality Rating <span className="required">*</span>
+                                <span className="rating-hint">(1-10)</span>
+                            </label>
                             {renderRatingButtons('food_rating', formData.food_rating)}
+                            {formData.food_rating > 0 && (
+                                <p className="rating-feedback">
+                                    {formData.food_rating >= 8 ? '😊 Excellent!' :
+                                        formData.food_rating >= 6 ? '👍 Good' :
+                                            formData.food_rating >= 4 ? '😐 Fair' : '😞 Needs improvement'}
+                                </p>
+                            )}
                         </div>
 
                         {/* Dishes Tried */}
                         <div className="form-group">
-                            <label className="form-label">Which dishes did you try?</label>
+                            <label className="form-label">
+                                Which dishes did you try?
+                                <span className="optional">(Optional)</span>
+                            </label>
                             <textarea
                                 className="form-textarea"
                                 placeholder="e.g., Chicken Karahi, Chapshuro, Hunza Tea..."
                                 value={formData.dishes_tried}
-                                onChange={(e) => setFormData({ ...formData, dishes_tried: e.target.value })}
+                                onChange={(e) => handleFieldChange('dishes_tried', e.target.value)}
                                 rows="3"
+                                maxLength="500"
                             />
+                            <p className="char-count">{formData.dishes_tried.length}/500</p>
                         </div>
 
                         {/* How did you hear about us */}
                         <div className="form-group">
-                            <label className="form-label">How did you hear about us? *</label>
+                            <label className="form-label">
+                                How did you hear about us? <span className="required">*</span>
+                            </label>
                             <select
-                                className="form-select"
+                                className={`form-select ${touched.heard_from && !formData.heard_from ? 'error' : ''}`}
                                 value={formData.heard_from}
-                                onChange={(e) => setFormData({ ...formData, heard_from: e.target.value })}
+                                onChange={(e) => handleFieldChange('heard_from', e.target.value)}
                                 required
                             >
                                 <option value="">Select an option</option>
@@ -191,23 +275,38 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
 
                         {/* Overall Rating */}
                         <div className="form-group">
-                            <label className="form-label">Overall Experience Rating * (1-10)</label>
+                            <label className="form-label">
+                                Overall Experience Rating <span className="required">*</span>
+                                <span className="rating-hint">(1-10)</span>
+                            </label>
                             {renderRatingButtons('overall_rating', formData.overall_rating)}
+                            {formData.overall_rating > 0 && (
+                                <p className="rating-feedback overall">
+                                    {formData.overall_rating >= 8 ? '🌟 Outstanding Experience!' :
+                                        formData.overall_rating >= 6 ? '✨ Great Experience' :
+                                            formData.overall_rating >= 4 ? '👌 Decent Experience' : '💭 We can do better'}
+                                </p>
+                            )}
                         </div>
 
                         {/* Additional Comments */}
                         <div className="form-group">
-                            <label className="form-label">Additional Comments</label>
+                            <label className="form-label">
+                                Additional Comments
+                                <span className="optional">(Optional)</span>
+                            </label>
                             <textarea
                                 className="form-textarea"
                                 placeholder="Any additional feedback or suggestions..."
                                 value={formData.additional_comments}
-                                onChange={(e) => setFormData({ ...formData, additional_comments: e.target.value })}
+                                onChange={(e) => handleFieldChange('additional_comments', e.target.value)}
                                 rows="4"
+                                maxLength="1000"
                             />
+                            <p className="char-count">{formData.additional_comments.length}/1000</p>
                         </div>
 
-                        <button type="submit" className="submit-button" disabled={loading}>
+                        <button type="submit" className="submit-button" disabled={loading || progress < 100}>
                             {loading ? 'Submitting...' : reviewToEdit ? 'Update Review' : 'Submit Feedback'}
                         </button>
                     </form>

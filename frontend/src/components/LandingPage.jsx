@@ -19,14 +19,14 @@ const LandingPage = ({ onNavigate }) => {
                         className="btn btn-primary"
                         onClick={() => onNavigate('create')}
                     >
-                        📝 Collect Customer Feedback
+                         Collect Customer Feedback
                     </button>
 
                     <button
                         className="btn btn-secondary"
                         onClick={() => onNavigate('view')}
                     >
-                        📊 View All Reviews
+                         View All Reviews
                     </button>
                 </div>
             </div>
