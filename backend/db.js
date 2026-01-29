@@ -17,7 +17,7 @@ export const initDatabase = async () => {
   try {
     // Drop the old table if it exists
     await pool.query('DROP TABLE IF EXISTS reviews');
-    console.log('🗑️  Old table dropped');
+    console.log(' Old table dropped');
 
     // Create new table with updated schema
     await pool.query(`
@@ -35,9 +35,9 @@ export const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✅ Database table initialized successfully with new schema');
+    console.log(' Database table initialized successfully with new schema');
   } catch (error) {
-    console.error('❌ Error initializing database:', error);
+    console.error(' Error initializing database:', error);
     throw error;
   }
 };
