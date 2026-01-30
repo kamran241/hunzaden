@@ -251,8 +251,15 @@ const ViewReviews = ({ onBack, onEdit }) => {
 
                                             {review.dishes_tried && (
                                                 <div className="review-section">
-                                                    <strong>Dishes Tried:</strong>
+                                                    <strong>Menu Items:</strong>
                                                     <p>{review.dishes_tried}</p>
+                                                </div>
+                                            )}
+
+                                            {review.phone_number && (
+                                                <div className="review-section">
+                                                    <strong>Phone:</strong>
+                                                    <p>{review.phone_number}</p>
                                                 </div>
                                             )}
 

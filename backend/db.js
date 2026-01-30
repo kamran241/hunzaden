@@ -15,15 +15,12 @@ const pool = new Pool({
 // Initialize database table
 export const initDatabase = async () => {
   try {
-    // Drop the old table if it exists
-    await pool.query('DROP TABLE IF EXISTS reviews');
-    console.log(' Old table dropped');
-
-    // Create new table with updated schema
+    // Create table only if it doesn't exist (preserves existing data)
     await pool.query(`
-      CREATE TABLE reviews (
+      CREATE TABLE IF NOT EXISTS reviews (
         id SERIAL PRIMARY KEY,
         customer_name VARCHAR(255) NOT NULL,
+        phone_number VARCHAR(20),
         ambience_rating INTEGER NOT NULL CHECK (ambience_rating >= 1 AND ambience_rating <= 10),
         management_rating INTEGER NOT NULL CHECK (management_rating >= 1 AND management_rating <= 10),
         food_rating INTEGER NOT NULL CHECK (food_rating >= 1 AND food_rating <= 10),
@@ -31,13 +28,14 @@ export const initDatabase = async () => {
         heard_from VARCHAR(100) NOT NULL,
         overall_rating INTEGER NOT NULL CHECK (overall_rating >= 1 AND overall_rating <= 10),
         additional_comments TEXT,
+        is_deleted BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log(' Database table initialized successfully with new schema');
+    console.log('✅ Database table ready (existing data preserved)');
   } catch (error) {
-    console.error(' Error initializing database:', error);
+    console.error('❌ Error initializing database:', error);
     throw error;
   }
 };

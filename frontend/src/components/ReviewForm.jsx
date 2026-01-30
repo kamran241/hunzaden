@@ -6,6 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const ReviewForm = ({ onBack, reviewToEdit = null }) => {
     const [formData, setFormData] = useState({
         customer_name: reviewToEdit?.customer_name || '',
+        phone_number: reviewToEdit?.phone_number || '',
         ambience_rating: reviewToEdit?.ambience_rating || 0,
         management_rating: reviewToEdit?.management_rating || 0,
         food_rating: reviewToEdit?.food_rating || 0,
@@ -88,6 +89,7 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                     setShowThankYou(true);
                     setFormData({
                         customer_name: '',
+                        phone_number: '',
                         ambience_rating: 0,
                         management_rating: 0,
                         food_rating: 0,
@@ -216,6 +218,22 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                             />
                         </div>
 
+                        {/* Phone Number */}
+                        <div className="form-group">
+                            <label className="form-label">
+                                Phone Number
+                                <span className="optional">(Optional)</span>
+                            </label>
+                            <input
+                                type="tel"
+                                className="form-input"
+                                placeholder="e.g., 0300-1234567"
+                                value={formData.phone_number}
+                                onChange={(e) => handleFieldChange('phone_number', e.target.value)}
+                                maxLength="20"
+                            />
+                        </div>
+
                         {/* Ambience Rating */}
                         <div className="form-group">
                             <label className="form-label">
@@ -264,21 +282,37 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                             )}
                         </div>
 
-                        {/* Dishes Tried */}
+                        {/* Menu Categories */}
                         <div className="form-group">
                             <label className="form-label">
-                                Which dishes did you try?
+                                Which portion did you try?
                                 <span className="optional">(Optional)</span>
                             </label>
-                            <textarea
-                                className="form-textarea"
-                                placeholder="e.g., Chicken Karahi, Chapshuro, Hunza Tea..."
-                                value={formData.dishes_tried}
-                                onChange={(e) => handleFieldChange('dishes_tried', e.target.value)}
-                                rows="3"
-                                maxLength="500"
-                            />
-                            <p className="char-count">{formData.dishes_tried.length}/500</p>
+                            <div className="checkbox-grid">
+                                {['SmokeHouse', 'Steaks', 'Poultry', 'Burgers', 'Pizza', 'Pasta', 'Platter', 'Traditional'].map((category) => {
+                                    const isChecked = formData.dishes_tried.includes(category);
+                                    return (
+                                        <label key={category} className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox-input"
+                                                checked={isChecked}
+                                                onChange={(e) => {
+                                                    const currentDishes = formData.dishes_tried ? formData.dishes_tried.split(', ').filter(d => d) : [];
+                                                    let newDishes;
+                                                    if (e.target.checked) {
+                                                        newDishes = [...currentDishes, category];
+                                                    } else {
+                                                        newDishes = currentDishes.filter(d => d !== category);
+                                                    }
+                                                    handleFieldChange('dishes_tried', newDishes.join(', '));
+                                                }}
+                                            />
+                                            <span className="checkbox-text">{category}</span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         {/* How did you hear about us */}

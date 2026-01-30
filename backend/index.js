@@ -26,7 +26,7 @@ app.get('/api/health', (req, res) => {
 app.get('/api/reviews', async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT * FROM reviews ORDER BY created_at DESC'
+            'SELECT * FROM reviews WHERE is_deleted = FALSE ORDER BY created_at DESC'
         );
         res.json({
             success: true,
@@ -48,7 +48,7 @@ app.get('/api/reviews/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const result = await pool.query(
-            'SELECT * FROM reviews WHERE id = $1',
+            'SELECT * FROM reviews WHERE id = $1 AND is_deleted = FALSE',
             [id]
         );
 
@@ -78,6 +78,7 @@ app.post('/api/reviews', async (req, res) => {
     try {
         const {
             customer_name,
+            phone_number,
             ambience_rating,
             management_rating,
             food_rating,
@@ -106,10 +107,10 @@ app.post('/api/reviews', async (req, res) => {
         }
 
         const result = await pool.query(
-            `INSERT INTO reviews (customer_name, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+            `INSERT INTO reviews (customer_name, phone_number, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
        RETURNING *`,
-            [customer_name, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments]
+            [customer_name, phone_number, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments]
         );
 
         res.status(201).json({
@@ -133,6 +134,7 @@ app.put('/api/reviews/:id', async (req, res) => {
         const { id } = req.params;
         const {
             customer_name,
+            phone_number,
             ambience_rating,
             management_rating,
             food_rating,
@@ -162,12 +164,12 @@ app.put('/api/reviews/:id', async (req, res) => {
 
         const result = await pool.query(
             `UPDATE reviews 
-       SET customer_name = $1, ambience_rating = $2, management_rating = $3, food_rating = $4, 
-           dishes_tried = $5, heard_from = $6, overall_rating = $7, additional_comments = $8, 
+       SET customer_name = $1, phone_number = $2, ambience_rating = $3, management_rating = $4, food_rating = $5, 
+           dishes_tried = $6, heard_from = $7, overall_rating = $8, additional_comments = $9, 
            updated_at = CURRENT_TIMESTAMP 
-       WHERE id = $9 
+       WHERE id = $10 
        RETURNING *`,
-            [customer_name, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments, id]
+            [customer_name, phone_number, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments, id]
         );
 
         if (result.rows.length === 0) {
@@ -192,12 +194,12 @@ app.put('/api/reviews/:id', async (req, res) => {
     }
 });
 
-// Delete review
+// Soft Delete review (marks as deleted, doesn't remove from database)
 app.delete('/api/reviews/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const result = await pool.query(
-            'DELETE FROM reviews WHERE id = $1 RETURNING *',
+            'UPDATE reviews SET is_deleted = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND is_deleted = FALSE RETURNING *',
             [id]
         );
 
