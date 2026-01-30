@@ -7,6 +7,10 @@ const LandingPage = ({ onNavigate }) => {
             <div className="landing-overlay"></div>
 
             <div className="landing-content">
+                <div className="logo-container">
+                    <img src="/images.png" alt="Hunza Den Logo" className="logo" />
+                </div>
+
                 <h1 className="landing-title">
                     Hunza Den
                 </h1>
@@ -19,14 +23,14 @@ const LandingPage = ({ onNavigate }) => {
                         className="btn btn-primary"
                         onClick={() => onNavigate('create')}
                     >
-                         Collect Customer Feedback
+                        Collect Customer Feedback
                     </button>
 
                     <button
                         className="btn btn-secondary"
                         onClick={() => onNavigate('view')}
                     >
-                         View All Reviews
+                        View All Reviews
                     </button>
                 </div>
             </div>

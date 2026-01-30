@@ -1,6 +1,6 @@
 .reviews-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+    background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
     padding: var(--spacing-xl) var(--spacing-md);
 }
 
@@ -12,7 +12,7 @@
 .reviews-header {
     text-align: center;
     margin-bottom: var(--spacing-xl);
-    color: var(--gray-800);
+    color: white;
 }
 
 .reviews-title {

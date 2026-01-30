@@ -146,6 +146,10 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                     )}
 
                     <div className="form-header">
+                        <div className="form-logo-container">
+                            <img src="/images.png" alt="Hunza Den Logo" className="form-logo" />
+                        </div>
+
                         <h1 className="form-title">
                             {reviewToEdit ? 'Edit Review' : 'Customer Feedback Form'}
                         </h1>

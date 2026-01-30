@@ -18,6 +18,10 @@ const PasswordGate = ({ onAuthenticated }) => {
     return (
         <div className="password-gate">
             <div className="password-card">
+                <div className="password-logo-container">
+                    <img src="/images.png" alt="Hunza Den Logo" className="password-logo" />
+                </div>
+
                 <div className="password-header">
                     <h1 className="password-title">Hunza Den</h1>
                     <p className="password-subtitle">Review Management System</p>

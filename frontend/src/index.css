@@ -1,26 +1,26 @@
 :root {
-  /* Simple, Decent Color Palette for Hunza Den */
-  --primary: #3498db;
-  --primary-dark: #2980b9;
-  --primary-light: #5dade2;
-  --secondary: #2c3e50;
-  --accent: #95a5a6;
+  /* Blackish Color Palette for Hunza Den */
+  --primary: #1a1a1a;
+  --primary-dark: #000000;
+  --primary-light: #2d2d2d;
+  --secondary: #404040;
+  --accent: #666666;
   --success: #27ae60;
   --warning: #f39c12;
   --danger: #e74c3c;
 
-  /* Neutrals */
+  /* Neutrals - Dark Theme */
   --white: #FFFFFF;
-  --gray-50: #F8F9FA;
-  --gray-100: #ECF0F1;
-  --gray-200: #D5DBDB;
-  --gray-300: #BDC3C7;
-  --gray-400: #95A5A6;
-  --gray-500: #7F8C8D;
-  --gray-600: #5D6D7E;
-  --gray-700: #34495E;
-  --gray-800: #2C3E50;
-  --gray-900: #1C2833;
+  --gray-50: #f8f9fa;
+  --gray-100: #e9ecef;
+  --gray-200: #dee2e6;
+  --gray-300: #ced4da;
+  --gray-400: #adb5bd;
+  --gray-500: #6c757d;
+  --gray-600: #495057;
+  --gray-700: #343a40;
+  --gray-800: #212529;
+  --gray-900: #1a1a1a;
   --black: #000000;
 
   /* Shadows */
