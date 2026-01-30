@@ -7,6 +7,7 @@ const ViewReviews = ({ onBack, onEdit }) => {
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ total: 0, averageOverall: 0, averageAmbience: 0, averageFood: 0 });
+    const [sortOrder, setSortOrder] = useState('newest');
 
     useEffect(() => {
         fetchReviews();
@@ -72,6 +73,15 @@ const ViewReviews = ({ onBack, onEdit }) => {
         });
     };
 
+    const getSortedReviews = () => {
+        const sorted = [...reviews];
+        if (sortOrder === 'newest') {
+            return sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        } else {
+            return sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        }
+    };
+
     if (loading) {
         return (
             <div className="reviews-page">
@@ -86,6 +96,8 @@ const ViewReviews = ({ onBack, onEdit }) => {
             </div>
         );
     }
+
+    const sortedReviews = getSortedReviews();
 
     return (
         <div className="reviews-page">
@@ -118,6 +130,19 @@ const ViewReviews = ({ onBack, onEdit }) => {
                     </div>
                 </div>
 
+                {/* Filter Dropdown */}
+                <div className="filter-container">
+                    <label className="filter-label">Sort by:</label>
+                    <select
+                        className="filter-select"
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                    >
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                    </select>
+                </div>
+
                 {reviews.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-icon">📝</div>
@@ -125,7 +150,7 @@ const ViewReviews = ({ onBack, onEdit }) => {
                     </div>
                 ) : (
                     <div className="reviews-grid">
-                        {reviews.map((review, index) => (
+                        {sortedReviews.map((review, index) => (
                             <div
                                 key={review.id}
                                 className="review-card"

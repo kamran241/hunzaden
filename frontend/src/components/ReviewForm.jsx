@@ -17,6 +17,7 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [touched, setTouched] = useState({});
+    const [showThankYou, setShowThankYou] = useState(false);
 
     // Calculate form completion percentage
     const calculateProgress = () => {
@@ -71,12 +72,17 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
             const data = await response.json();
 
             if (data.success) {
-                setMessage({
-                    type: 'success',
-                    text: reviewToEdit ? 'Review updated successfully! ✓' : 'Thank you for your feedback! ✓'
-                });
-
-                if (!reviewToEdit) {
+                if (reviewToEdit) {
+                    setMessage({
+                        type: 'success',
+                        text: 'Review updated successfully! ✓'
+                    });
+                    setTimeout(() => {
+                        onBack();
+                    }, 2000);
+                } else {
+                    // Show thank you popup for new reviews
+                    setShowThankYou(true);
                     setFormData({
                         customer_name: '',
                         ambience_rating: 0,
@@ -88,11 +94,12 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                         additional_comments: ''
                     });
                     setTouched({});
-                }
 
-                setTimeout(() => {
-                    onBack();
-                }, 2000);
+                    setTimeout(() => {
+                        setShowThankYou(false);
+                        onBack();
+                    }, 4000);
+                }
             } else {
                 setMessage({ type: 'error', text: data.message || 'Something went wrong' });
             }
@@ -142,6 +149,21 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                         <div className="loading-overlay">
                             <div className="spinner"></div>
                             <p className="loading-text">Submitting your feedback...</p>
+                        </div>
+                    )}
+
+                    {/* Thank You Popup */}
+                    {showThankYou && (
+                        <div className="thankyou-overlay">
+                            <div className="thankyou-card">
+                                <div className="thankyou-icon">🙏</div>
+                                <h2 className="thankyou-title">Thank You!</h2>
+                                <p className="thankyou-message">
+                                    We appreciate your valuable feedback.
+                                </p>
+                                <p className="thankyou-subtitle">See you again! 😊</p>
+                                <div className="thankyou-checkmark">✓</div>
+                            </div>
                         </div>
                     )}
 
