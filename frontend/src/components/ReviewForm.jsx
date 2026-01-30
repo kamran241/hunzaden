@@ -81,6 +81,9 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                         onBack();
                     }, 2000);
                 } else {
+                    // Scroll to top to show popup
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
                     // Show thank you popup for new reviews
                     setShowThankYou(true);
                     setFormData({
