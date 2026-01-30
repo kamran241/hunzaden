@@ -8,6 +8,18 @@ const ViewReviews = ({ onBack, onEdit }) => {
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ total: 0, averageOverall: 0, averageAmbience: 0, averageFood: 0 });
     const [sortOrder, setSortOrder] = useState('newest');
+    const [expandedReviews, setExpandedReviews] = useState({});
+
+    useEffect(() => {
+        fetchReviews();
+    }, []);
+
+    const toggleReview = (reviewId) => {
+        setExpandedReviews(prev => ({
+            ...prev,
+            [reviewId]: !prev[reviewId]
+        }));
+    };
 
     useEffect(() => {
         fetchReviews();
@@ -41,6 +53,23 @@ const ViewReviews = ({ onBack, onEdit }) => {
         const averageFood = (reviewsData.reduce((sum, r) => sum + r.food_rating, 0) / total).toFixed(1);
 
         setStats({ total, averageOverall, averageAmbience, averageFood });
+    };
+
+    const calculateSourceStats = (reviewsData) => {
+        const sources = {};
+        reviewsData.forEach(review => {
+            const source = review.heard_from;
+            sources[source] = (sources[source] || 0) + 1;
+        });
+
+        // Convert to array and sort by count
+        return Object.entries(sources)
+            .map(([name, count]) => ({
+                name,
+                count,
+                percentage: ((count / reviewsData.length) * 100).toFixed(1)
+            }))
+            .sort((a, b) => b.count - a.count);
     };
 
     const handleDelete = async (id) => {
@@ -143,6 +172,30 @@ const ViewReviews = ({ onBack, onEdit }) => {
                     </select>
                 </div>
 
+                {/* Source Analytics */}
+                {reviews.length > 0 && (
+                    <div className="source-analytics">
+                        <h2 className="source-title">Where Customers Found Us</h2>
+                        <div className="source-bars">
+                            {calculateSourceStats(reviews).map((source, index) => (
+                                <div key={index} className="source-item">
+                                    <div className="source-info">
+                                        <span className="source-name">{source.name}</span>
+                                        <span className="source-count">{source.count} ({source.percentage}%)</span>
+                                    </div>
+                                    <div className="source-bar-container">
+                                        <div
+                                            className="source-bar"
+                                            style={{ width: `${source.percentage}%` }}
+                                        >
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {reviews.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-icon">📝</div>
@@ -150,72 +203,96 @@ const ViewReviews = ({ onBack, onEdit }) => {
                     </div>
                 ) : (
                     <div className="reviews-grid">
-                        {sortedReviews.map((review, index) => (
-                            <div
-                                key={review.id}
-                                className="review-card"
-                            >
-                                <div className="review-header">
-                                    <div className="reviewer-info">
-                                        <h3 className="reviewer-name">{review.customer_name}</h3>
-                                        <p className="review-date">{formatDate(review.created_at)}</p>
-                                    </div>
-                                    <div className="overall-rating">
-                                        <span className="rating-number">{review.overall_rating}</span>
-                                        <span className="rating-max">/10</span>
-                                    </div>
-                                </div>
+                        {sortedReviews.map((review, index) => {
+                            const isExpanded = expandedReviews[review.id];
 
-                                <div className="rating-details">
-                                    <div className="rating-item">
-                                        <span className="rating-label">Ambience:</span>
-                                        <span className="rating-value">{review.ambience_rating}/10</span>
-                                    </div>
-                                    <div className="rating-item">
-                                        <span className="rating-label">Management:</span>
-                                        <span className="rating-value">{review.management_rating}/10</span>
-                                    </div>
-                                    <div className="rating-item">
-                                        <span className="rating-label">Food:</span>
-                                        <span className="rating-value">{review.food_rating}/10</span>
-                                    </div>
-                                </div>
-
-                                {review.dishes_tried && (
-                                    <div className="review-section">
-                                        <strong>Dishes Tried:</strong>
-                                        <p>{review.dishes_tried}</p>
-                                    </div>
-                                )}
-
-                                <div className="review-section">
-                                    <strong>Heard From:</strong>
-                                    <p>{review.heard_from}</p>
-                                </div>
-
-                                {review.additional_comments && (
-                                    <div className="review-section">
-                                        <strong>Comments:</strong>
-                                        <p>{review.additional_comments}</p>
-                                    </div>
-                                )}
-
-                                <div className="review-actions">
-                                    <button
-                                        className="action-button edit-button"
-                                        onClick={() => onEdit(review)}
+                            return (
+                                <div
+                                    key={review.id}
+                                    className={`review-card ${isExpanded ? 'expanded' : 'collapsed'}`}
+                                >
+                                    {/* Clickable Header */}
+                                    <div
+                                        className="review-header clickable"
+                                        onClick={() => toggleReview(review.id)}
                                     >
-                                        Edit
-                                    </button>
-                                    <button
-                                        className="action-button delete-button"
-                                        onClick={() => handleDelete(review.id)}
-                                    >
-                                        Delete
-                                    </button>
+                                        <div className="reviewer-info">
+                                            <h3 className="reviewer-name">{review.customer_name}</h3>
+                                            <p className="review-date">{formatDate(review.created_at)}</p>
+                                        </div>
+                                        <div className="header-right">
+                                            <div className="overall-rating">
+                                                <span className="rating-number">{review.overall_rating}</span>
+                                                <span className="rating-max">/10</span>
+                                            </div>
+                                            <span className="expand-icon">
+                                                {isExpanded ? '▼' : '▶'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Collapsible Details */}
+                                    {isExpanded && (
+                                        <div className="review-details">
+                                            <div className="rating-details">
+                                                <div className="rating-item">
+                                                    <span className="rating-label">Ambience:</span>
+                                                    <span className="rating-value">{review.ambience_rating}/10</span>
+                                                </div>
+                                                <div className="rating-item">
+                                                    <span className="rating-label">Management:</span>
+                                                    <span className="rating-value">{review.management_rating}/10</span>
+                                                </div>
+                                                <div className="rating-item">
+                                                    <span className="rating-label">Food:</span>
+                                                    <span className="rating-value">{review.food_rating}/10</span>
+                                                </div>
+                                            </div>
+
+                                            {review.dishes_tried && (
+                                                <div className="review-section">
+                                                    <strong>Dishes Tried:</strong>
+                                                    <p>{review.dishes_tried}</p>
+                                                </div>
+                                            )}
+
+                                            <div className="review-section">
+                                                <strong>Heard From:</strong>
+                                                <p>{review.heard_from}</p>
+                                            </div>
+
+                                            {review.additional_comments && (
+                                                <div className="review-section">
+                                                    <strong>Comments:</strong>
+                                                    <p>{review.additional_comments}</p>
+                                                </div>
+                                            )}
+
+                                            <div className="review-actions">
+                                                <button
+                                                    className="action-button edit-button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onEdit(review);
+                                                    }}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    className="action-button delete-button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDelete(review.id);
+                                                    }}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
