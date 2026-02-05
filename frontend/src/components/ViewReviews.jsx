@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './ViewReviews.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -6,7 +6,6 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const ViewReviews = ({ onBack, onEdit }) => {
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState({ total: 0, averageOverall: 0, averageAmbience: 0, averageFood: 0 });
     const [sortOrder, setSortOrder] = useState('newest');
     const [expandedReviews, setExpandedReviews] = useState({});
 
@@ -21,10 +20,6 @@ const ViewReviews = ({ onBack, onEdit }) => {
         }));
     };
 
-    useEffect(() => {
-        fetchReviews();
-    }, []);
-
     const fetchReviews = async () => {
         try {
             const response = await fetch(`${API_URL}/reviews`);
@@ -32,7 +27,6 @@ const ViewReviews = ({ onBack, onEdit }) => {
 
             if (data.success) {
                 setReviews(data.data);
-                calculateStats(data.data);
             }
         } catch (error) {
             console.error('Error fetching reviews:', error);
@@ -41,23 +35,23 @@ const ViewReviews = ({ onBack, onEdit }) => {
         }
     };
 
-    const calculateStats = (reviewsData) => {
-        const total = reviewsData.length;
+    const stats = useMemo(() => {
+        const total = reviews.length;
         if (total === 0) {
-            setStats({ total: 0, averageOverall: 0, averageAmbience: 0, averageFood: 0 });
-            return;
+            return { total: 0, averageOverall: 0, averageAmbience: 0, averageFood: 0 };
         }
 
-        const averageOverall = (reviewsData.reduce((sum, r) => sum + r.overall_rating, 0) / total).toFixed(1);
-        const averageAmbience = (reviewsData.reduce((sum, r) => sum + r.ambience_rating, 0) / total).toFixed(1);
-        const averageFood = (reviewsData.reduce((sum, r) => sum + r.food_rating, 0) / total).toFixed(1);
+        const averageOverall = (reviews.reduce((sum, r) => sum + r.overall_rating, 0) / total).toFixed(1);
+        const averageAmbience = (reviews.reduce((sum, r) => sum + r.ambience_rating, 0) / total).toFixed(1);
+        const averageFood = (reviews.reduce((sum, r) => sum + r.food_rating, 0) / total).toFixed(1);
 
-        setStats({ total, averageOverall, averageAmbience, averageFood });
-    };
+        return { total, averageOverall, averageAmbience, averageFood };
+    }, [reviews]);
 
-    const calculateSourceStats = (reviewsData) => {
+    const sourceStats = useMemo(() => {
+        if (reviews.length === 0) return [];
         const sources = {};
-        reviewsData.forEach(review => {
+        reviews.forEach(review => {
             const source = review.heard_from;
             sources[source] = (sources[source] || 0) + 1;
         });
@@ -67,10 +61,19 @@ const ViewReviews = ({ onBack, onEdit }) => {
             .map(([name, count]) => ({
                 name,
                 count,
-                percentage: ((count / reviewsData.length) * 100).toFixed(1)
+                percentage: ((count / reviews.length) * 100).toFixed(1)
             }))
             .sort((a, b) => b.count - a.count);
-    };
+    }, [reviews]);
+
+    const sortedReviews = useMemo(() => {
+        const sorted = [...reviews];
+        if (sortOrder === 'newest') {
+            return sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        } else {
+            return sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        }
+    }, [reviews, sortOrder]);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this review?')) {
@@ -102,14 +105,6 @@ const ViewReviews = ({ onBack, onEdit }) => {
         });
     };
 
-    const getSortedReviews = () => {
-        const sorted = [...reviews];
-        if (sortOrder === 'newest') {
-            return sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        } else {
-            return sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-        }
-    };
 
     if (loading) {
         return (
@@ -126,7 +121,6 @@ const ViewReviews = ({ onBack, onEdit }) => {
         );
     }
 
-    const sortedReviews = getSortedReviews();
 
     return (
         <div className="reviews-page">
@@ -177,7 +171,7 @@ const ViewReviews = ({ onBack, onEdit }) => {
                     <div className="source-analytics">
                         <h2 className="source-title">Where Customers Found Us</h2>
                         <div className="source-bars">
-                            {calculateSourceStats(reviews).map((source, index) => (
+                            {sourceStats.map((source, index) => (
                                 <div key={index} className="source-item">
                                     <div className="source-info">
                                         <span className="source-name">{source.name}</span>
@@ -253,6 +247,13 @@ const ViewReviews = ({ onBack, onEdit }) => {
                                                 <div className="review-section">
                                                     <strong>Menu Items:</strong>
                                                     <p>{review.dishes_tried}</p>
+                                                </div>
+                                            )}
+
+                                            {review.visit_type && (
+                                                <div className="review-section">
+                                                    <strong>Visit Type:</strong>
+                                                    <p>{review.visit_type}</p>
                                                 </div>
                                             )}
 

@@ -28,6 +28,7 @@ export const initDatabase = async () => {
         heard_from VARCHAR(100) NOT NULL,
         overall_rating INTEGER NOT NULL CHECK (overall_rating >= 1 AND overall_rating <= 10),
         additional_comments TEXT,
+        visit_type VARCHAR(50) DEFAULT 'First-time',
         is_deleted BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

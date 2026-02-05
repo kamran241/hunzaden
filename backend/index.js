@@ -85,7 +85,8 @@ app.post('/api/reviews', async (req, res) => {
             dishes_tried,
             heard_from,
             overall_rating,
-            additional_comments
+            additional_comments,
+            visit_type
         } = req.body;
 
         // Validation
@@ -107,10 +108,10 @@ app.post('/api/reviews', async (req, res) => {
         }
 
         const result = await pool.query(
-            `INSERT INTO reviews (customer_name, phone_number, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            `INSERT INTO reviews (customer_name, phone_number, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments, visit_type) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
        RETURNING *`,
-            [customer_name, phone_number, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments]
+            [customer_name, phone_number, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments, visit_type]
         );
 
         res.status(201).json({
@@ -141,7 +142,8 @@ app.put('/api/reviews/:id', async (req, res) => {
             dishes_tried,
             heard_from,
             overall_rating,
-            additional_comments
+            additional_comments,
+            visit_type
         } = req.body;
 
         // Validation
@@ -165,11 +167,11 @@ app.put('/api/reviews/:id', async (req, res) => {
         const result = await pool.query(
             `UPDATE reviews 
        SET customer_name = $1, phone_number = $2, ambience_rating = $3, management_rating = $4, food_rating = $5, 
-           dishes_tried = $6, heard_from = $7, overall_rating = $8, additional_comments = $9, 
+           dishes_tried = $6, heard_from = $7, overall_rating = $8, additional_comments = $9, visit_type = $10,
            updated_at = CURRENT_TIMESTAMP 
-       WHERE id = $10 
+       WHERE id = $11 
        RETURNING *`,
-            [customer_name, phone_number, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments, id]
+            [customer_name, phone_number, ambience_rating, management_rating, food_rating, dishes_tried, heard_from, overall_rating, additional_comments, visit_type, id]
         );
 
         if (result.rows.length === 0) {

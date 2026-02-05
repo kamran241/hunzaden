@@ -13,7 +13,8 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
         dishes_tried: reviewToEdit?.dishes_tried || '',
         heard_from: reviewToEdit?.heard_from || '',
         overall_rating: reviewToEdit?.overall_rating || 0,
-        additional_comments: reviewToEdit?.additional_comments || ''
+        additional_comments: reviewToEdit?.additional_comments || '',
+        visit_type: reviewToEdit?.visit_type || ''
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -168,6 +169,19 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                                 </p>
                                 <p className="thankyou-subtitle">See you again! 😊</p>
                                 <div className="thankyou-checkmark">✓</div>
+
+                                <div className="google-review-cta">
+                                    <p className="google-text">Share your experience on Google!</p>
+                                    <a
+                                        href="https://www.google.com/maps/search/Hunza+Den+restaurant+Lahore/@31.5492471,74.3415174,17z"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="google-btn"
+                                    >
+                                        <img src="https://www.gstatic.com/images/branding/product/2x/maps_96dp.png" alt="Google" className="google-icon-img" />
+                                        Review Hunza Den
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -315,6 +329,21 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                             </div>
                         </div>
 
+                        {/* Visit Type */}
+                        <div className="form-group">
+                            <label className="form-label">
+                                Type of Visit
+                                <span className="optional">(e.g., First-time, Regular, Celebration)</span>
+                            </label>
+                            <input
+                                type="text"
+                                className="form-input"
+                                placeholder="How would you describe your visit?"
+                                value={formData.visit_type}
+                                onChange={(e) => handleFieldChange('visit_type', e.target.value)}
+                            />
+                        </div>
+
                         {/* How did you hear about us */}
                         <div className="form-group">
                             <label className="form-label">
@@ -344,11 +373,18 @@ const ReviewForm = ({ onBack, reviewToEdit = null }) => {
                             </label>
                             {renderRatingButtons('overall_rating', formData.overall_rating)}
                             {formData.overall_rating > 0 && (
-                                <p className="rating-feedback overall">
-                                    {formData.overall_rating >= 8 ? '🌟 Outstanding Experience!' :
-                                        formData.overall_rating >= 6 ? '✨ Great Experience' :
-                                            formData.overall_rating >= 4 ? '👌 Decent Experience' : '💭 We can do better'}
-                                </p>
+                                <div className="rating-feedback overall">
+                                    <p>
+                                        {formData.overall_rating >= 8 ? '🌟 Outstanding Experience!' :
+                                            formData.overall_rating >= 6 ? '✨ Great Experience' :
+                                                formData.overall_rating >= 4 ? '👌 Decent Experience' : '💭 We can do better'}
+                                    </p>
+                                    {formData.ambience_rating > 0 && formData.management_rating > 0 && formData.food_rating > 0 && (
+                                        <p className="average-hint">
+                                            (Average of your ratings: {((formData.ambience_rating + formData.management_rating + formData.food_rating) / 3).toFixed(1)}/10)
+                                        </p>
+                                    )}
+                                </div>
                             )}
                         </div>
 
